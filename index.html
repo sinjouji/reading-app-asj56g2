@@ -789,8 +789,9 @@ function loadLocalData(){
 
 if(localStorage.getItem('books')){
   books = JSON.parse(localStorage.getItem('books'));
-}
-  
+}else{
+  await loadData(); // 初回だけ
+}  
 async function loadData(){
   try{
     const res = await fetch('data.json');
