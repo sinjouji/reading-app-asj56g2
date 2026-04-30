@@ -757,6 +757,7 @@ function saveData(){
     tags: tagMaster
   };
   localStorage.setItem('readingAppData', JSON.stringify(data));
+  localStorage.setItem('books', JSON.stringify(books));
 }
 
 function loadLocalData(){
@@ -786,6 +787,12 @@ function loadLocalData(){
 
 // ---------- 起動 ----------
 
+if(localStorage.getItem('books')){
+  books = JSON.parse(localStorage.getItem('books'));
+}else{
+  await loadData(); // 初回だけ
+}
+  
 async function loadData(){
   try{
     const res = await fetch('data.json');
