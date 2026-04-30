@@ -74,14 +74,34 @@ function addBook(){
 
   books.unshift({
     id: Date.now(),
-    title
+    title,
+    memo: ''
   });
 
   input.value = '';
   scheduleSave();
   render();
 }
+  
+function render(){
+  const el = document.getElementById('list');
+  el.innerHTML = books.map(b => `
+    <div class="card">
+      <div>${b.title}</div>
+      <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo || ''}</textarea>
+      <button onclick="removeBook(${b.id})">削除</button>
+    </div>
+  `).join('');
+}
 
+  function updateMemo(id, val){
+  const b = books.find(x => x.id === id);
+  if(!b) return;
+  b.memo = val;
+  scheduleSave();
+}
+  
+  
 function removeBook(id){
   books = books.filter(b => b.id !== id);
   scheduleSave();
