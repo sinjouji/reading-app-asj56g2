@@ -789,8 +789,6 @@ function loadLocalData(){
 
 if(localStorage.getItem('books')){
   books = JSON.parse(localStorage.getItem('books'));
-}else{
-  await loadData(); // 初回だけ
 }
   
 async function loadData(){
@@ -815,12 +813,6 @@ async function loadData(){
 
   async function init(){
   initAccent();
-
-  try{
-    await loadData();
-  }catch(e){
-    console.log('loadData error', e);
-  }
 
   // ⭐ ここは絶対実行されるようにする
   document.getElementById('loading-overlay').style.display='none';
