@@ -786,9 +786,35 @@ function loadLocalData(){
 
 // ---------- 起動 ----------
 
-if(localStorage.getItem('books')){
-  books = JSON.parse(localStorage.getItem('books'));
+async function loadData(){
+  try{
+    const res = await fetch('data.json');
+    if(!res.ok) throw new Error('no data');
+
+    const d = await res.json();
+    books = d.books || [];
+    series = d.series || [];
+    tagMaster = d.tags || [];
+
+  }catch(e){
+    console.log('データロード失敗 → 初期化', e);
+
+    // ⭐ 超重要：ここで必ず初期化
+    books = [];
+    series = [];
+    tagMaster = [];
+  }
 }
+
+  async function init(){
+  initAccent();
+
+  try{
+    await loadData();
+  }catch(e){
+    console.log('loadData error', e);
+  }
+
   // ⭐ ここは絶対実行されるようにする
   document.getElementById('loading-overlay').style.display='none';
 
@@ -796,21 +822,6 @@ if(localStorage.getItem('books')){
   document.getElementById('nb-shelf')?.classList.add('act');
   renderShelf();
 }
-
-function init(){
-  initAccent();
-
-  // ⭐ ローカルから読む
-  loadLocalData();
-
-  // ⭐ ローディング強制終了
-  document.getElementById('loading-overlay').style.display='none';
-
-  renderNav();
-  document.getElementById('nb-shelf')?.classList.add('act');
-  renderShelf();
-}
-  
   
 </script>
 </body>
