@@ -2,12 +2,11 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Reading App 完成版（ローカル）</title>
+<title>Reading App（シリーズ対応版）</title>
 <style>
 body{font-family:sans-serif;margin:0;padding:20px;background:#f5f5f5}
-h1{margin-bottom:10px}
 .card{background:#fff;border:1px solid #ddd;padding:10px;margin-bottom:10px;border-radius:6px}
-input,textarea{width:100%;margin-top:5px;margin-bottom:5px;padding:6px}
+input,textarea,select{width:100%;margin-top:5px;margin-bottom:5px;padding:6px}
 button{padding:6px 10px;margin-top:5px}
 .row{display:flex;gap:5px;flex-wrap:wrap}
 .tag{padding:3px 6px;border-radius:4px;background:#ddd;font-size:12px}
@@ -15,24 +14,29 @@ button{padding:6px 10px;margin-top:5px}
 </head>
 <body>
 
-<h1>読書アプリ（完成版・ローカル保存）</h1>
+<h1>読書アプリ（シリーズ対応版）</h1>
 
 <div class="card">
   <input id="title" placeholder="タイトル">
   <textarea id="memo" placeholder="メモ"></textarea>
+  <select id="seriesSelect"></select>
   <button onclick="addBook()">追加</button>
+</div>
+
+<div class="card">
+  <input id="newSeries" placeholder="新しいシリーズ名">
+  <button onclick="addSeries()">シリーズ作成</button>
 </div>
 
 <div id="list"></div>
 
 <script>
-// ===== データ =====
 let books = [];
-let tagMaster = [];
+let series = [];
 
 // ===== 保存 =====
 function saveData(){
-  localStorage.setItem('readingAppData', JSON.stringify({books, tagMaster}));
+  localStorage.setItem('readingAppData', JSON.stringify({books, series}));
 }
 
 function loadData(){
@@ -40,32 +44,26 @@ function loadData(){
     const d = JSON.parse(localStorage.getItem('readingAppData'));
     if(!d) return;
     books = d.books || [];
-    tagMaster = d.tagMaster || [];
+    series = d.series || [];
   }catch(e){
     books = [];
-    tagMaster = [];
+    series = [];
   }
 }
 
-function scheduleSave(){
-  saveData();
-}
+function scheduleSave(){ saveData(); }
 
 // ===== UI =====
 function render(){
-  const el = document.getElementById('list');
+  renderSeriesSelect();
 
+  const el = document.getElementById('list');
   el.innerHTML = books.map(b=>`
     <div class="card">
       <div><b>${b.title}</b></div>
+      <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
-
-      <div class="row">
-        ${(b.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
-      </div>
-
-      <input placeholder="タグ追加" onkeydown="addTag(event, ${b.id}, this)">
 
       <div class="row">
         <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
@@ -75,10 +73,22 @@ function render(){
   `).join('');
 }
 
+function renderSeriesSelect(){
+  const sel = document.getElementById('seriesSelect');
+  sel.innerHTML = '<option value="">シリーズなし</option>' +
+    series.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function getSeriesName(id){
+  const s = series.find(x=>x.id===id);
+  return s ? 'シリーズ: ' + s.name : '';
+}
+
 // ===== 操作 =====
 function addBook(){
   const title = document.getElementById('title').value.trim();
   const memo = document.getElementById('memo').value;
+  const seriesId = document.getElementById('seriesSelect').value;
 
   if(!title) return;
 
@@ -86,13 +96,27 @@ function addBook(){
     id: Date.now(),
     title,
     memo,
-    tags: [],
-    fav: false
+    fav:false,
+    seriesId: seriesId || null
   });
 
   document.getElementById('title').value='';
   document.getElementById('memo').value='';
 
+  scheduleSave();
+  render();
+}
+
+function addSeries(){
+  const name = document.getElementById('newSeries').value.trim();
+  if(!name) return;
+
+  series.push({
+    id: 's'+Date.now(),
+    name
+  });
+
+  document.getElementById('newSeries').value='';
   scheduleSave();
   render();
 }
@@ -114,24 +138,6 @@ function toggleFav(id){
   const b = books.find(x=>x.id===id);
   if(!b) return;
   b.fav = !b.fav;
-  scheduleSave();
-  render();
-}
-
-function addTag(e, id, input){
-  if(e.key !== 'Enter') return;
-
-  const val = input.value.trim();
-  if(!val) return;
-
-  const b = books.find(x=>x.id===id);
-  if(!b) return;
-
-  if(!b.tags.includes(val)){
-    b.tags.push(val);
-  }
-
-  input.value='';
   scheduleSave();
   render();
 }
