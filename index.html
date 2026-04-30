@@ -784,7 +784,11 @@ async function init(){
   }catch(e){
     console.log('loadData error', e);
   }
-
+if(localStorage.getItem('books')){
+  books = JSON.parse(localStorage.getItem('books'));
+}else{
+  await loadData(); // 初回だけ
+}
   // ⭐ ここは絶対実行されるようにする
   document.getElementById('loading-overlay').style.display='none';
 
