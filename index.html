@@ -79,6 +79,8 @@ function render(){
       <input placeholder="タグ追加" onkeydown="addTag(event, ${b.id}, this)">
 
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
+  <select id="seriesSelect"></select>
+  <button onclick="addBook()">追加</button>
 
       <div class="row">
         <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
