@@ -225,16 +225,12 @@ let calFromDate=null;
 try{const s=JSON.parse(localStorage.getItem('filters')||'{}');tagFilterModes=s.tagFilterModes||{};aTy=s.aTy||'';aFv=s.aFv||0;sK=s.sK||'date';sD=s.sD||'desc';}catch(e){}
 function saveFilterState(){try{localStorage.setItem('filters',JSON.stringify({tagFilterModes,aTy,aFv,sK,sD}));}catch(e){}}
 
-// ---------- 同期 ----------
-function setSS(s,m){const el=document.getElementById('sync-status');el.className=s;el.textContent=m;}
-async function loadData(){
-  try{const r=await fetch(CONFIG.DATA_URL+'?t='+Date.now());if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();books=d.books||[];tagMaster=d.tagMaster||[];series=d.series||[];features=d.features||defFeats();setSS('ok','✓ 同期済み');}
-  catch(e){books=[];tagMaster=[];series=[];features=defFeats();setSS('error','⚠ 読込失敗');alert('data.json の読み込みに失敗しました。\n'+e.message);}
+//同期
+  function scheduleSave(){
+  saveData();
 }
-function scheduleSave(){clearTimeout(saveTimer);setSS('saving','⟳ 保存中...');saveTimer=setTimeout(doSave,CONFIG.SAVE_DELAY_MS);}
-async function doSave(){try{const r=await fetch(CONFIG.SAVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:CONFIG.API_KEY,data:{books,tagMaster,series,features}})});const j=await r.json();j.ok?setSS('ok','✓ 同期済み'):(()=>{throw new Error(j.error)})();}catch(e){setSS('error','⚠ 保存失敗');}}
-function defFeats(){return[{id:'fav',name:'お気に入り度',desc:'4段階で評価を記録',on:true},{id:'tags',name:'タグ付け',desc:'本にタグを付けて分類',on:true},{id:'series',name:'シリーズ管理',desc:'続刊・シリーズをまとめる',on:true},{id:'readlog',name:'読了ログ',desc:'読んだ日付・回数を記録',on:true},{id:'stats_tag',name:'タグ別統計',desc:'タグ別グラフを表示',on:true},{id:'stats_month',name:'月別読了数',desc:'月ごとの統計を表示',on:true},{id:'wishlist',name:'ウィッシュリスト',desc:'読みたい本を管理',on:true},{id:'memo',name:'メモ欄',desc:'各ページにメモ欄を表示',on:false}];}
 
+  
 // ---------- ユーティリティ ----------
 const feat=id=>features.find(f=>f.id===id)?.on;
 const tagById=id=>tagMaster.find(t=>t.id===id);
@@ -752,38 +748,44 @@ function createBookFromSeries(seriesId){
   }
 }
 
-// ---------- 起動 ----------
-async function loadData(){
-  try{
-    // 例：ローカルストレージから読むだけにする
-    async function loadData(){
-  try{
-    const res = await fetch('data.json');
-    if(!res.ok) throw new Error('no data');
 
-    const d = await res.json();
-    books = d.books || [];
-    series = d.series || [];
-    tagMaster = d.tags || [];
+ // ---------- ローカル保存 ----------
+function saveData(){
+  const data = {
+    books,
+    series,
+    tags: tagMaster
+  };
+  localStorage.setItem('readingAppData', JSON.stringify(data));
+}
 
+function loadLocalData(){
+  try{
+    const raw = localStorage.getItem('readingAppData');
+    if(!raw){
+      console.log('初回起動：データなし');
+      return;
+    }
+
+    const data = JSON.parse(raw);
+
+    books = data.books || [];
+    series = data.series || [];
+    tagMaster = data.tags || [];
+
+    console.log('ローカルデータ読み込み成功');
   }catch(e){
-    console.log('データロード失敗 → 初期化', e);
-
-    // ⭐ 超重要：ここで必ず初期化
+    console.error('ローカルデータ読み込み失敗', e);
     books = [];
     series = [];
     tagMaster = [];
   }
-}
+} 
 
-async function init(){
-  initAccent();
 
-  try{
-    await loadData();
-  }catch(e){
-    console.log('loadData error', e);
-  }
+
+// ---------- 起動 ----------
+
 if(localStorage.getItem('books')){
   books = JSON.parse(localStorage.getItem('books'));
 }else{
@@ -797,6 +799,20 @@ if(localStorage.getItem('books')){
   renderShelf();
 }
 
+function init(){
+  initAccent();
+
+  // ⭐ ローカルから読む
+  loadLocalData();
+
+  // ⭐ ローディング強制終了
+  document.getElementById('loading-overlay').style.display='none';
+
+  renderNav();
+  document.getElementById('nb-shelf')?.classList.add('act');
+  renderShelf();
+}
+  
   
 </script>
 </body>
