@@ -753,12 +753,34 @@ function createBookFromSeries(seriesId){
 }
 
 // ---------- 起動 ----------
-async function init(){
-  initAccent();
-  await loadData();document.getElementById('loading-overlay').style.display='none';
-  renderNav();document.getElementById('nb-shelf')?.classList.add('act');renderShelf();
+async function loadData(){
+  try{
+    // 例：ローカルストレージから読むだけにする
+    const saved = localStorage.getItem('readingAppData');
+    if(saved){
+      const data = JSON.parse(saved);
+      books = data.books || [];
+      series = data.series || [];
+      tagMaster = data.tagMaster || [];
+    }
+  }catch(e){
+    console.error('loadData error', e);
+  }
 }
-init();
+  async function init(){
+  initAccent();
+  try{
+    await loadData();
+  }catch(e){
+    console.error(e);
+  }
+
+  document.getElementById('loading-overlay').style.display='none';
+  renderNav();
+  document.getElementById('nb-shelf')?.classList.add('act');
+  renderShelf();
+}
+  init();
 </script>
 </body>
 </html>
