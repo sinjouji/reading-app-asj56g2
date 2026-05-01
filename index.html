@@ -145,24 +145,21 @@ const filtered = books.filter(b=>{
   const el = document.getElementById('list');
   el.innerHTML = filtered.map(b=>`
     <div class="card" onclick="openDetail(${b.id})">
-      <div><b>${b.title}</b></div>
+      <div><b>${b.title}</b>  <div>${b.status || "未読"}</div></div>
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
       <div class="row">
  ${tagMaster.map(t=>{
   const on = (b.tags||[]).includes(t.id);
 
-return `
-  <span class="tag ${on?'on':''}"
-    style="
-      background:${on ? t.color : '#fff'};
-      color:${on ? '#fff' : t.color};
-      border:1px solid ${t.color};
-    "
-    onclick="toggleTag(${b.id}, '${t.id}')">
-    ${t.name}
-  </span>
-`;
+  if(!on) return '';
+
+  return `
+    <span class="tag"
+      style="background:${t.color};color:#fff;">
+      ${t.name}
+    </span>
+  `;
 }).join('')}
       </div>
 
@@ -224,7 +221,8 @@ function addBook(){
     memo,
     tags: [],
     fav:false,
-    seriesId: seriesId || null
+    seriesId: seriesId || null,
+    status: "unread"
   });
 
   document.getElementById('title').value='';
@@ -397,60 +395,71 @@ function openDetail(id){
   const b = books.find(x=>x.id===id);
   if(!b) return;
 
+  currentBook = JSON.parse(JSON.stringify(b)); // コピー
+
   document.getElementById('list').style.display = 'none';
   document.getElementById('detail').style.display = 'block';
 
   document.getElementById('detail').innerHTML = `
     <div class="card">
+
       <button onclick="closeDetail()">← 戻る</button>
 
-      <h2>${b.title}</h2>
-      <div>${getSeriesName(b.seriesId)}</div>
+      <h2>${currentBook.title}</h2>
 
+      <!-- ステータス -->
+      <select id="status">
+        <option value="unread">未読</option>
+        <option value="reading">読書中</option>
+        <option value="done">読了</option>
+      </select>
+
+      <!-- タグ -->
       <div class="row">
-        ${(b.tags||[]).map(tid=>{
-          const t = tagMaster.find(x=>x.id===tid);
-          if(!t) return '';
-          return `<span class="tag" style="background:${t.color};color:#fff;">${t.name}</span>`;
+        ${tagMaster.map(t=>{
+          const on = (currentBook.tags||[]).includes(t.id);
+
+          return `
+            <span class="tag ${on?'on':''}"
+              style="background:${on ? t.color : '#fff'};
+                     color:${on ? '#fff' : t.color};
+                     border:1px solid ${t.color};"
+              onclick="toggleDetailTag('${t.id}')">
+              ${t.name}
+            </span>
+          `;
         }).join('')}
       </div>
 
-      <h3>メモ</h3>
-      <textarea onchange="updateMemo(${b.id}, this.value)">
-        ${b.memo||''}
-      </textarea>
-      
-           <!-- シリーズ変更 -->
-      <select onchange="changeSeries(${b.id}, this.value)">
+      <!-- メモ -->
+      <textarea id="detailMemo">${currentBook.memo||''}</textarea>
+
+      <!-- シリーズ -->
+      <select id="detailSeries">
         <option value="">シリーズなし</option>
         ${series.map(s=>`
-          <option value="${s.id}" ${b.seriesId===s.id?'selected':''}>
+          <option value="${s.id}">
             ${s.name}
           </option>
         `).join('')}
       </select>
 
-      <div class="row">
-        <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
-        <button onclick="event.stopPropagation(); removeBook(${b.id})">削除</button>
-      </div>
+      <!-- お気に入り -->
+      <button onclick="toggleDetailFav()">
+        ${currentBook.fav?'★お気に入り':'☆お気に入り'}
+      </button>
+
+      <br><br>
+
+      <button onclick="saveDetail()">保存</button>
+      <button onclick="deleteDetail()">削除</button>
+
     </div>
-  `).join('');
-}
+  `;
 
-function renderSeriesSelect(){
-  const sel = document.getElementById('seriesSelect');
-  sel.innerHTML = '<option value="">シリーズなし</option>' +
-    series.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-}
-
-function getSeriesName(id){
-  const s = series.find(x=>x.id===id);
-  return s ? 'シリーズ: ' + s.name : '';
-}
-
-      
-    </div>`;
+  // 初期値セット
+  document.getElementById('status').value = currentBook.status || "unread";
+  document.getElementById('detailSeries').value = currentBook.seriesId || "";
 }
 
 
