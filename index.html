@@ -71,7 +71,8 @@ let activeTags = [];
 
 // ===== 保存 =====
 function saveData(){
-  localStorage.setItem('readingAppData', JSON.stringify({books, series, tagMaster}));
+  localStorage.setItem('readingAppData',
+  JSON.stringify({books, series, tagMaster}));
 }
 
 function loadData(){
@@ -80,7 +81,7 @@ function loadData(){
     if(!d) return;
     books = d.books || [];
     series = d.series || [];
-    tagMaster = d.tagMaster || [];
+    tagMaster = d.tagMaster || tagMaster;
   }catch(e){
     books = [];
     series = [];
