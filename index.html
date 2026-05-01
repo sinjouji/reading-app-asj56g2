@@ -14,6 +14,7 @@ padding:4px 8px;
 border-radius:999px;
 background:#ddd;
 fcursor:pointer;
+font-size:12px;
 }
 .tag.on{
 	background:#67b255;
@@ -46,11 +47,25 @@ fcursor:pointer;
 
 <div id="list"></div>
 
+<!--タグ管理画面-->
+<div class="card">
+  <h3>タグ管理</h3>
+
+  <div id="tag-list"></div>
+
+  <input id="newTagName" placeholder="タグ名">
+  <button onclick="addTagMaster()">追加</button>
+</div>
+
 <script>
+//最初の定義付け、初期値入力？
 
 let books = [];
 let series = [];
-let tagMaster = ["小説","ビジネス","漫画","技術"];
+let tagMaster = [
+	{id:"t1", name:"小説", color:"#f00"},
+	{id:"t2", name:"漫画", color:"orange"}
+];
 let activeTags = [];
 
 // ===== 保存 =====
@@ -85,8 +100,12 @@ const filtered = books.filter(b=>{
   
 });
 
+
+//renderに追加するやつ
   renderSeriesSelect();
   renderFilterTags();
+  renderTagManager();
+  
 
   const el = document.getElementById('list');
   el.innerHTML = filtered.map(b=>`
@@ -95,15 +114,16 @@ const filtered = books.filter(b=>{
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
       <div class="row">
-      ${tagMaster.map(t=>{
-      const on = (b.tags||[]).includes(t);
-      return `
-      	<span class="tag ${on?'on':''}"
-      		onclick="toggleTag(${b.id}, '${t}')">
-      		${t}
-      		</span>
-      	`;
-      }).join('')}
+ ${tagMaster.map(t=>{
+  const on = (b.tags||[]).includes(t.id);
+
+  return `
+    <span class="tag ${on?'on':''}"
+      onclick="toggleTag(${b.id}, '${t.id}')">
+      ${t.name}
+    </span>
+  `;
+}).join('')}
       </div>
       
      
@@ -153,6 +173,18 @@ function renderFilterTags(){
       </span>
     `;
   }).join('');
+}
+
+//タグ一覧の描画
+function renderTagManager(){
+  const el = document.getElementById('tag-list');
+
+  el.innerHTML = tagMaster.map(t=>`
+    <div class="row">
+      <span class="tag">${t.name}</span>
+      <button onclick="deleteTag('${t.id}')">削除</button>
+    </div>
+  `).join('');
 }
 
 
@@ -224,22 +256,21 @@ function toggleFav(id){
   render();
 }
 
-function toggleTag(id, tag){
-	const b = books.find(x=>x.id===id);
-	if(!b) return;
-	
-	if(!b.tags) b.tags =[];
-	
-	if(b.tags.includes(tag)){
-		b.tags = btags.filter(t=>t!==tag);
-	}else{
-		b.tags.push(tag);
-	}
-	
-	scheduleSave();
-	render();
-}
+function toggleTag(id, tagId){
+  const b = books.find(x=>x.id===id);
+  if(!b) return;
 
+  if(!b.tags) b.tags = [];
+
+  if(b.tags.includes(tagId)){
+    b.tags = b.tags.filter(t=>t!==tagId);
+  }else{
+    b.tags.push(tagId);
+  }
+
+  scheduleSave();
+  render();
+}
 
 function toggleFilterTag(tag){
   if(activeTags.includes(tag)){
@@ -254,6 +285,42 @@ function clearFilter(){
   activeTags = [];
   render();
 }
+
+//タグ追加
+function addTagMaster(){
+  const name = document.getElementById('newTagName').value.trim();
+  if(!name) return;
+
+  tagMaster.push({
+    id: 't'+Date.now(),
+    name
+  });
+
+  document.getElementById('newTagName').value='';
+
+  scheduleSave();
+  render();
+}
+
+
+
+//タグ削除
+function deleteTag(id){
+
+  // タグ削除
+  tagMaster = tagMaster.filter(t=>t.id !== id);
+
+  // 本からも消す
+  books.forEach(b=>{
+    b.tags = (b.tags||[]).filter(t=>t !== id);
+  });
+
+  scheduleSave();
+  render();
+}
+
+
+
 
 // ===== 起動 =====
 function init(){
