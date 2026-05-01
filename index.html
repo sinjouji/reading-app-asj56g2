@@ -470,6 +470,54 @@ function closeDetail(){
 }
 
 
+//タグ（詳細）
+function toggleDetailTag(tagId){
+  if(!currentBook.tags) currentBook.tags = [];
+
+  if(currentBook.tags.includes(tagId)){
+    currentBook.tags = currentBook.tags.filter(t=>t!==tagId);
+  }else{
+    currentBook.tags.push(tagId);
+  }
+
+  openDetail(currentBook.id); // 再描画
+}
+
+//お気に入り（詳細）
+function toggleDetailFav(){
+  currentBook.fav = !currentBook.fav;
+  openDetail(currentBook.id);
+}
+
+
+//保存（詳細）
+function saveDetail(){
+  const b = books.find(x=>x.id===currentBook.id);
+  if(!b) return;
+
+  b.memo = document.getElementById('detailMemo').value;
+  b.seriesId = document.getElementById('detailSeries').value || null;
+  b.status = document.getElementById('status').value;
+  b.tags = currentBook.tags;
+  b.fav = currentBook.fav;
+
+  scheduleSave();
+  closeDetail();
+  render();
+}
+
+
+//削除（詳細）
+function deleteDetail(){
+  if(!confirm("削除する？")) return;
+
+  books = books.filter(b=>b.id!==currentBook.id);
+
+  scheduleSave();
+  closeDetail();
+  render();
+}
+
 
 
 // ===== 起動 =====
