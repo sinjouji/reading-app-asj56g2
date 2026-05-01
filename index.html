@@ -166,45 +166,6 @@ return `
 }).join('')}
       </div>
 
-//個別ページ詳細
-function openDetail(id){
-  const b = books.find(x=>x.id===id);
-  if(!b) return;
-
-  document.getElementById('list').style.display = 'none';
-  document.getElementById('detail').style.display = 'block';
-
-  document.getElementById('detail').innerHTML = `
-    <div class="card">
-      <button onclick="closeDetail()">← 戻る</button>
-
-      <h2>${b.title}</h2>
-      <div>${getSeriesName(b.seriesId)}</div>
-
-      <div class="row">
-        ${(b.tags||[]).map(tid=>{
-          const t = tagMaster.find(x=>x.id===tid);
-          if(!t) return '';
-          return `<span class="tag" style="background:${t.color};color:#fff;">${t.name}</span>`;
-        }).join('')}
-      </div>
-
-      <h3>メモ</h3>
-      <textarea onchange="updateMemo(${b.id}, this.value)">
-        ${b.memo||''}
-      </textarea>
-    </div>
-  `;
-}
-
-//一覧に戻る
-function closeDetail(){
-  document.getElementById('list').style.display = 'block';
-  document.getElementById('detail').style.display = 'none';
-}
-
-
-
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
 
       <!-- シリーズ変更 -->
@@ -459,6 +420,43 @@ function importData(e){
   reader.readAsText(file);
 }
 
+
+//個別ページ詳細
+function openDetail(id){
+  const b = books.find(x=>x.id===id);
+  if(!b) return;
+
+  document.getElementById('list').style.display = 'none';
+  document.getElementById('detail').style.display = 'block';
+
+  document.getElementById('detail').innerHTML = `
+    <div class="card">
+      <button onclick="closeDetail()">← 戻る</button>
+
+      <h2>${b.title}</h2>
+      <div>${getSeriesName(b.seriesId)}</div>
+
+      <div class="row">
+        ${(b.tags||[]).map(tid=>{
+          const t = tagMaster.find(x=>x.id===tid);
+          if(!t) return '';
+          return `<span class="tag" style="background:${t.color};color:#fff;">${t.name}</span>`;
+        }).join('')}
+      </div>
+
+      <h3>メモ</h3>
+      <textarea onchange="updateMemo(${b.id}, this.value)">
+        ${b.memo||''}
+      </textarea>
+    </div>
+  `;
+}
+
+//一覧に戻る
+function closeDetail(){
+  document.getElementById('list').style.display = 'block';
+  document.getElementById('detail').style.display = 'none';
+}
 
 
 
