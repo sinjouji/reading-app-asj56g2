@@ -130,37 +130,45 @@ function scheduleSave(){
 // ===== UI(render:描画) =====
 function render(){
 
-	renderSeriesSelect();
-	renderFilterTags();
-	renderTagManager();
+  renderSeriesSelect();
+  renderFilterTags();
+  renderTagManager();
 
-const filtered = books.filter(b=>{
-  if(activeTags.length === 0) return true;
-  return activeTags.some(tagId => (b.tags||[]).includes(tagId)); //OR
-  
-});
-
-
+  const filtered = books.filter(b=>{
+    if(activeTags.length === 0) return true;
+    return activeTags.some(tagId => (b.tags||[]).includes(tagId));
+  });
 
   const el = document.getElementById('list');
+
   el.innerHTML = filtered.map(b=>`
     <div class="card" onclick="openDetail(${b.id})">
-      <div><b>${b.title}</b>  <div>${b.status || "未読"}</div></div>
-      <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
+      <div>
+        <b>${b.title}</b><br>
+        <small>${b.status || "未読"}</small>
+      </div>
+
+      <div style="font-size:12px;color:#666">
+        ${getSeriesName(b.seriesId)}
+      </div>
 
       <div class="row">
- ${tagMaster.map(t=>{
-  const on = (b.tags||[]).includes(t.id);
+        ${tagMaster.map(t=>{
+          const on = (b.tags||[]).includes(t.id);
+          if(!on) return '';
 
-  if(!on) return '';
+          return `
+            <span class="tag"
+              style="background:${t.color};color:#fff;">
+              ${t.name}
+            </span>
+          `;
+        }).join('')}
+      </div>
 
-  return `
-    <span class="tag"
-      style="background:${t.color};color:#fff;">
-      ${t.name}
-    </span>
-  `;
-}).join('')}
+    </div>
+  `).join('');
+}
       </div>
 
 
