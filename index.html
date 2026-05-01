@@ -2,19 +2,19 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Reading App（修正版）</title>
+<title>読書ログ</title>
 <style>
 body{font-family:sans-serif;margin:0;padding:20px;background:#f5f5f5}
 .card{background:#fff;border:1px solid #ddd;padding:10px;margin-bottom:10px;border-radius:6px}
-input,textarea,select{width:100%;margin-top:5px;margin-bottom:5px;padding:6px}
+input,textarea,select{width:70%;margin-top:5px;margin-bottom:5px;padding:6px}
 button{padding:6px 10px;margin-top:5px}
 .row{display:flex;gap:5px;flex-wrap:wrap}
 
 
 .tag{
-  padding:6px 10px;
+  padding:2px 6px;
   border-radius:999px;
-  font-size:12px;
+  font-size:10px;
   cursor:pointer;
   border:1px solid transparent;
   transition: all 0.15s ease;
@@ -70,6 +70,9 @@ button{padding:6px 10px;margin-top:5px}
 </div>
 
 <div id="list"></div>
+
+<!--個別ページエリア-->
+<div id="detail" style="display:none"></div>
 
 <!--タグ管理画面-->
 <div class="card">
@@ -141,7 +144,7 @@ const filtered = books.filter(b=>{
 
   const el = document.getElementById('list');
   el.innerHTML = filtered.map(b=>`
-    <div class="card">
+    <div class="card" onclick="openDetail(${b.id})">
       <div><b>${b.title}</b></div>
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
@@ -163,6 +166,44 @@ return `
 }).join('')}
       </div>
 
+//個別ページ詳細
+function openDetail(id){
+  const b = books.find(x=>x.id===id);
+  if(!b) return;
+
+  document.getElementById('list').style.display = 'none';
+  document.getElementById('detail').style.display = 'block';
+
+  document.getElementById('detail').innerHTML = `
+    <div class="card">
+      <button onclick="closeDetail()">← 戻る</button>
+
+      <h2>${b.title}</h2>
+      <div>${getSeriesName(b.seriesId)}</div>
+
+      <div class="row">
+        ${(b.tags||[]).map(tid=>{
+          const t = tagMaster.find(x=>x.id===tid);
+          if(!t) return '';
+          return `<span class="tag" style="background:${t.color};color:#fff;">${t.name}</span>`;
+        }).join('')}
+      </div>
+
+      <h3>メモ</h3>
+      <textarea onchange="updateMemo(${b.id}, this.value)">
+        ${b.memo||''}
+      </textarea>
+    </div>
+  `;
+}
+
+//一覧に戻る
+function closeDetail(){
+  document.getElementById('list').style.display = 'block';
+  document.getElementById('detail').style.display = 'none';
+}
+
+
 
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
 
@@ -178,7 +219,7 @@ return `
 
       <div class="row">
         <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
-        <button onclick="removeBook(${b.id})">削除</button>
+        <button onclick="event.stopPropagation(); removeBook(${b.id})">削除</button>
       </div>
     </div>
   `).join('');
@@ -417,6 +458,8 @@ function importData(e){
 
   reader.readAsText(file);
 }
+
+
 
 
 
