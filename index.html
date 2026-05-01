@@ -24,6 +24,11 @@ fcursor:pointer;
 <body>
 
 <h1>読書アプリ</h1>
+<!--絞り込み-->
+<div class="card">
+	<div class="row" id="filter-tags"></div>
+	<button onclick="clearFilter()">解除</button>
+</div>
 
 <!-- 本追加 -->
 <div class="card">
@@ -46,6 +51,7 @@ fcursor:pointer;
 let books = [];
 let series = [];
 let tagMaster = ["小説","ビジネス","漫画","技術"];
+let activeTags = [];
 
 // ===== 保存 =====
 function saveData(){
@@ -68,13 +74,22 @@ function scheduleSave(){
   saveData();
 }
 
-// ===== UI =====
+// ===== UI(render:描画) =====
 function render(){
 
+const filtered = books.filter(b=>{
+  if(activeTags.length === 0) return true;
+
+  return activeTags.every(t => (b.tags||[]).includes(t)); //AND
+  return activeTags.some(t => (b.tags||[]).includes(t)); //OR
+  
+});
+
   renderSeriesSelect();
+  renderFilterTags();
 
   const el = document.getElementById('list');
-  el.innerHTML = books.map(b=>`
+  el.innerHTML = filtered.map(b=>`
     <div class="card">
       <div><b>${b.title}</b></div>
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
@@ -123,6 +138,25 @@ function getSeriesName(id){
   const s = series.find(x=>x.id===id);
   return s ? 'シリーズ: ' + s.name : '';
 }
+
+//タグ絞り込み
+function renderFilterTags(){
+  const el = document.getElementById('filter-tags');
+
+  el.innerHTML = tagMaster.map(t=>{
+    const on = activeTags.includes(t);
+
+    return `
+      <span class="tag ${on?'on':''}"
+        onclick="toggleFilterTag('${t}')">
+        ${t}
+      </span>
+    `;
+  }).join('');
+}
+
+
+
 
 // ===== 操作 =====
 function addBook(){
@@ -190,26 +224,6 @@ function toggleFav(id){
   render();
 }
 
-function addTag(e, id, input){
-  if(e.key !== 'Enter') return;
-
-  const val = input.value.trim();
-  if(!val) return;
-
-  const b = books.find(x=>x.id===id);
-  if(!b) return;
-
-  if(!b.tags) b.tags = [];
-
-  if(!b.tags.includes(val)){
-    b.tags.push(val);
-  }
-
-  input.value='';
-  scheduleSave();
-  render();
-}
-
 function toggleTag(id, tag){
 	const b = books.find(x=>x.id===id);
 	if(!b) return;
@@ -224,6 +238,21 @@ function toggleTag(id, tag){
 	
 	scheduleSave();
 	render();
+}
+
+
+function toggleFilterTag(tag){
+  if(activeTags.includes(tag)){
+    activeTags = activeTags.filter(t=>t!==tag);
+  }else{
+    activeTags.push(tag);
+  }
+
+  render();
+}
+function clearFilter(){
+  activeTags = [];
+  render();
 }
 
 // ===== 起動 =====
