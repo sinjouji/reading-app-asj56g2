@@ -13,7 +13,7 @@ button{padding:6px 10px;margin-top:5px}
 padding:4px 8px;
 border-radius:999px;
 background:#ddd;
-fcursor:pointer;
+cursor:pointer;
 font-size:12px;
 }
 .tag.on{
@@ -66,11 +66,12 @@ let tagMaster = [
 	{id:"t1", name:"小説", color:"#f00"},
 	{id:"t2", name:"漫画", color:"orange"}
 ];
+let filterMode = "OR";
 let activeTags = [];
 
 // ===== 保存 =====
 function saveData(){
-  localStorage.setItem('readingAppData', JSON.stringify({books, series}));
+  localStorage.setItem('readingAppData', JSON.stringify({books, series, tagMaster}));
 }
 
 function loadData(){
@@ -79,12 +80,13 @@ function loadData(){
     if(!d) return;
     books = d.books || [];
     series = d.series || [];
+    tagMaster = d.tagMaster || [];
   }catch(e){
     books = [];
     series = [];
+    tagMaster = [];
   }
 }
-
 function scheduleSave(){
   saveData();
 }
@@ -92,20 +94,17 @@ function scheduleSave(){
 // ===== UI(render:描画) =====
 function render(){
 
+	renderSeriesSelect();
+	renderFilterTags();
+	renderTagManager();
+
 const filtered = books.filter(b=>{
   if(activeTags.length === 0) return true;
-
-  return activeTags.every(tagId => (b.tags||[]).includes(tagId)); //AND
   return activeTags.some(tagId => (b.tags||[]).includes(tagId)); //OR
   
 });
 
 
-//renderに追加するやつ
-  renderSeriesSelect();
-  renderFilterTags();
-  renderTagManager();
-  
 
   const el = document.getElementById('list');
   el.innerHTML = filtered.map(b=>`
@@ -113,7 +112,7 @@ const filtered = books.filter(b=>{
       <div><b>${b.title}</b></div>
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
-      <div class="row">
+      <div style="background:${t.color}" class="row">
  ${tagMaster.map(t=>{
   const on = (b.tags||[]).includes(t.id);
 
@@ -293,9 +292,10 @@ function addTagMaster(){
   if(!name) return;
 
   tagMaster.push({
-    id: 't'+Date.now(),
-    name
-  });
+  id: 't'+Date.now(),
+  name,
+  color: "#67b255"
+});
 
   document.getElementById('newTagName').value='';
 
