@@ -13,8 +13,7 @@ button{padding:6px 10px;margin-top:5px}
 padding:4px 8px;
 border-radius:999px;
 background:#ddd;
-cursor:pointer;
-font-size:12px;
+font-size:10px;
 }
 .tag.on{
 	background:#67b255;
@@ -64,7 +63,7 @@ let books = [];
 let series = [];
 let tagMaster = [
 	{id:"t1", name:"小説", color:"#f00"},
-	{id:"t2", name:"漫画", color:"orange"}
+	{id:"t2", name:"漫画", color:"#ebfebf"}
 ];
 let filterMode = "OR";
 let activeTags = [];
@@ -126,8 +125,7 @@ const filtered = books.filter(b=>{
 `;
 }).join('')}
       </div>
-      
-     
+
 
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
 
@@ -202,7 +200,7 @@ function addBook(){
     id: Date.now(),
     title,
     memo,
-    tags: [],  //本データ構造？
+    tags: [],
     fav:false,
     seriesId: seriesId || null
   });
