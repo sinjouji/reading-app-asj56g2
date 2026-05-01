@@ -166,36 +166,6 @@ return `
 }).join('')}
       </div>
 
-      <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
-
-      <!-- シリーズ変更 -->
-      <select onchange="changeSeries(${b.id}, this.value)">
-        <option value="">シリーズなし</option>
-        ${series.map(s=>`
-          <option value="${s.id}" ${b.seriesId===s.id?'selected':''}>
-            ${s.name}
-          </option>
-        `).join('')}
-      </select>
-
-      <div class="row">
-        <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
-        <button onclick="event.stopPropagation(); removeBook(${b.id})">削除</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderSeriesSelect(){
-  const sel = document.getElementById('seriesSelect');
-  sel.innerHTML = '<option value="">シリーズなし</option>' +
-    series.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-}
-
-function getSeriesName(id){
-  const s = series.find(x=>x.id===id);
-  return s ? 'シリーズ: ' + s.name : '';
-}
 
 
 //==タグ一覧の描画==
@@ -449,6 +419,37 @@ function openDetail(id){
         ${b.memo||''}
       </textarea>
     </div>
+    
+          <!-- シリーズ変更 -->
+      <select onchange="changeSeries(${b.id}, this.value)">
+        <option value="">シリーズなし</option>
+        ${series.map(s=>`
+          <option value="${s.id}" ${b.seriesId===s.id?'selected':''}>
+            ${s.name}
+          </option>
+        `).join('')}
+      </select>
+
+      <div class="row">
+        <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
+        <button onclick="event.stopPropagation(); removeBook(${b.id})">削除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderSeriesSelect(){
+  const sel = document.getElementById('seriesSelect');
+  sel.innerHTML = '<option value="">シリーズなし</option>' +
+    series.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function getSeriesName(id){
+  const s = series.find(x=>x.id===id);
+  return s ? 'シリーズ: ' + s.name : '';
+}
+
+    
   `;
 }
 
