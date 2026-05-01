@@ -113,12 +113,13 @@ const filtered = books.filter(b=>{
       <div><b>${b.title}</b></div>
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
-      <div style="background:${t.color}" class="row">
+      <div class="row">
  ${tagMaster.map(t=>{
   const on = (b.tags||[]).includes(t.id);
 
   return `
     <span class="tag ${on?'on':''}"
+     style="background:${on ? t.color : '#ddd'}"
       onclick="toggleTag(${b.id}, '${t.id}')">
       ${t.name}
     </span>
