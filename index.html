@@ -99,8 +99,8 @@ button{padding:6px 10px;margin-top:5px}
 let books = [];
 let series = [];
 let tagMaster = [
-	{id:"t1", name:"小説", color:"#67b255"},
-	{id:"t2", name:"漫画", color:"#ff9800"}
+  {id:"t1", name:"小説", color:"#67b255"},
+  {id:"t2", name:"漫画", color:"#ff9800"}
 ];
 let filterMode = "OR";
 let activeTags = [];
@@ -121,6 +121,7 @@ function loadData(){
   }catch(e){
     books = [];
     series = [];
+    tagMaster = [];
   }
 }
 function scheduleSave(){
