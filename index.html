@@ -19,6 +19,11 @@ button{padding:6px 10px;margin-top:5px}
 
 <div class="card">
   <input id="title" placeholder="タイトル">
+         <div class="row">
+        ${(b.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+      </div>
+
+      <input placeholder="タグ追加" onkeydown="addTag(event, ${b.id}, this)">
   <textarea id="memo" placeholder="メモ"></textarea>
   <select id="seriesSelect"></select>
   <button onclick="addBook()">追加</button>
