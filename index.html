@@ -118,12 +118,12 @@ const filtered = books.filter(b=>{
   const on = (b.tags||[]).includes(t.id);
 
   return `
-    <span class="tag ${on?'on':''}"
-     style="background:${on ? t.color : '#ddd'}"
-      onclick="toggleTag(${b.id}, '${t.id}')">
-      ${t.name}
-    </span>
-  `;
+  <span class="tag ${on?'on':''}"
+    style="background:${on ? t.color : '#ddd'}"
+    onclick="toggleTag(${b.id}, '${t.id}')">
+    ${t.name}
+  </span>
+`;
 }).join('')}
       </div>
       
