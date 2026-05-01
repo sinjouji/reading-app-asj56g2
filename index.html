@@ -9,7 +9,16 @@ body{font-family:sans-serif;margin:0;padding:20px;background:#f5f5f5}
 input,textarea,select{width:100%;margin-top:5px;margin-bottom:5px;padding:6px}
 button{padding:6px 10px;margin-top:5px}
 .row{display:flex;gap:5px;flex-wrap:wrap}
-.tag{padding:3px 6px;border-radius:4px;background:#ddd;font-size:12px}
+.tag{
+padding:4px 8px;
+border-radius:999px;
+background:#ddd;
+fcursor:pointer;
+}
+.tag.on{
+	background:#67b255;
+	color:#fff;
+}
 </style>
 </head>
 <body>
@@ -36,6 +45,7 @@ button{padding:6px 10px;margin-top:5px}
 
 let books = [];
 let series = [];
+let tagMaster = ["小説","ビジネス","漫画","技術"];
 
 // ===== 保存 =====
 function saveData(){
@@ -70,10 +80,18 @@ function render(){
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
 
       <div class="row">
-        ${(b.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
+      ${tagMaster.map(t=>{
+      const on = (b.tags||[]).includes(t);
+      return `
+      	<span class="tag ${on?'on':''}"
+      		onclick="toggleTag(${b.id}, '${t}')">
+      		${t}
+      		</span>
+      	`;
+      }).join('')}
       </div>
-
-      <input placeholder="タグ追加" onkeydown="addTag(event, ${b.id}, this)">
+      
+     
 
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
 
@@ -118,7 +136,7 @@ function addBook(){
     id: Date.now(),
     title,
     memo,
-    tags: [],
+    tags: [],  //本データ構造？
     fav:false,
     seriesId: seriesId || null
   });
@@ -190,6 +208,22 @@ function addTag(e, id, input){
   input.value='';
   scheduleSave();
   render();
+}
+
+function toggleTag(id, tag){
+	const b = books.find(x=>x.id===id);
+	if(!b) return;
+	
+	if(!b.tags) b.tags =[];
+	
+	if(b.tags.includes(tag)){
+		b.tags = btags.filter(t=>t!==tag);
+	}else{
+		b.tags.push(tag);
+	}
+	
+	scheduleSave();
+	render();
 }
 
 // ===== 起動 =====
