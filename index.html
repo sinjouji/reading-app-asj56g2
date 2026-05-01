@@ -2,10 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Reading App（シリーズ対応版）</title>
+<title>Reading App（修正版）</title>
 <style>
 body{font-family:sans-serif;margin:0;padding:20px;background:#f5f5f5}
-h1{margin-bottom:10px}
 .card{background:#fff;border:1px solid #ddd;padding:10px;margin-bottom:10px;border-radius:6px}
 input,textarea,select{width:100%;margin-top:5px;margin-bottom:5px;padding:6px}
 button{padding:6px 10px;margin-top:5px}
@@ -15,20 +14,17 @@ button{padding:6px 10px;margin-top:5px}
 </head>
 <body>
 
-<h1>読書アプリ（シリーズ対応版）</h1>
+<h1>読書アプリ</h1>
 
+<!-- 本追加 -->
 <div class="card">
   <input id="title" placeholder="タイトル">
-         <div class="row">
-        ${(b.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
-      </div>
-
-      <input placeholder="タグ追加" onkeydown="addTag(event, ${b.id}, this)">
   <textarea id="memo" placeholder="メモ"></textarea>
   <select id="seriesSelect"></select>
   <button onclick="addBook()">追加</button>
 </div>
 
+<!-- シリーズ追加 -->
 <div class="card">
   <input id="newSeries" placeholder="新しいシリーズ名">
   <button onclick="addSeries()">シリーズ作成</button>
@@ -38,14 +34,12 @@ button{padding:6px 10px;margin-top:5px}
 
 <script>
 
-//データ
 let books = [];
-let tagMaster = [];
 let series = [];
 
 // ===== 保存 =====
 function saveData(){
-  localStorage.setItem('readingAppData', JSON.stringify({books, tagMaster, series}));
+  localStorage.setItem('readingAppData', JSON.stringify({books, series}));
 }
 
 function loadData(){
@@ -53,18 +47,16 @@ function loadData(){
     const d = JSON.parse(localStorage.getItem('readingAppData'));
     if(!d) return;
     books = d.books || [];
-    tagMaster = d.tagMaster || [];
     series = d.series || [];
   }catch(e){
     books = [];
-    tagMaster = [];
     series = [];
   }
 }
 
 function scheduleSave(){
- saveData();
-  }
+  saveData();
+}
 
 // ===== UI =====
 function render(){
@@ -76,16 +68,24 @@ function render(){
     <div class="card">
       <div><b>${b.title}</b></div>
       <div style="font-size:12px;color:#666">${getSeriesName(b.seriesId)}</div>
-      
-       <div class="row">
+
+      <div class="row">
         ${(b.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}
       </div>
 
       <input placeholder="タグ追加" onkeydown="addTag(event, ${b.id}, this)">
 
       <textarea onchange="updateMemo(${b.id}, this.value)">${b.memo||''}</textarea>
-  <select id="seriesSelect"></select>
-  <button onclick="addBook()">追加</button>
+
+      <!-- シリーズ変更 -->
+      <select onchange="changeSeries(${b.id}, this.value)">
+        <option value="">シリーズなし</option>
+        ${series.map(s=>`
+          <option value="${s.id}" ${b.seriesId===s.id?'selected':''}>
+            ${s.name}
+          </option>
+        `).join('')}
+      </select>
 
       <div class="row">
         <button onclick="toggleFav(${b.id})">${b.fav?'★':'☆'}</button>
@@ -144,6 +144,13 @@ function addSeries(){
   render();
 }
 
+function changeSeries(id, seriesId){
+  const b = books.find(x=>x.id===id);
+  if(!b) return;
+  b.seriesId = seriesId || null;
+  scheduleSave();
+}
+
 function removeBook(id){
   books = books.filter(b=>b.id!==id);
   scheduleSave();
@@ -174,6 +181,8 @@ function addTag(e, id, input){
   const b = books.find(x=>x.id===id);
   if(!b) return;
 
+  if(!b.tags) b.tags = [];
+
   if(!b.tags.includes(val)){
     b.tags.push(val);
   }
@@ -190,7 +199,7 @@ function init(){
 }
 
 init();
-</script>
 
+</script>
 </body>
 </html>
