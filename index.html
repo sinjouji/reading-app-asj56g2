@@ -9,15 +9,40 @@ body{font-family:sans-serif;margin:0;padding:20px;background:#f5f5f5}
 input,textarea,select{width:100%;margin-top:5px;margin-bottom:5px;padding:6px}
 button{padding:6px 10px;margin-top:5px}
 .row{display:flex;gap:5px;flex-wrap:wrap}
+
+
 .tag{
-padding:4px 8px;
-border-radius:999px;
-background:#ddd;
-font-size:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition: all 0.15s ease;
+  user-select:none;
 }
+
+/* 未選択 */
+.tag{
+  background:#fff;
+  color:#666;
+  border-color:#ddd;
+}
+
+/* 選択中 */
 .tag.on{
-	background:#67b255;
-	color:#fff;
+  color:#fff;
+  border-color:transparent;
+}
+
+/* ホバー */
+.tag:hover{
+  transform:scale(1.05);
+  opacity:0.9;
+}
+
+/* 押したとき */
+.tag:active{
+  transform:scale(0.95);
 }
 </style>
 </head>
@@ -124,14 +149,14 @@ const filtered = books.filter(b=>{
  ${tagMaster.map(t=>{
   const on = (b.tags||[]).includes(t.id);
 
-  return `
+return `
   <span class="tag ${on?'on':''}"
-style="
-  background:${on ? t.color : '#fff'};
-  color:${on ? '#fff' : t.color};
-  border:1px solid ${t.color};
-  "
-      onclick="toggleTag(${b.id}, '${t.id}')">
+    style="
+      background:${on ? t.color : '#fff'};
+      color:${on ? '#fff' : t.color};
+      border:1px solid ${t.color};
+    "
+    onclick="toggleTag(${b.id}, '${t.id}')">
     ${t.name}
   </span>
 `;
@@ -177,7 +202,14 @@ function renderTagManager(){
 
   el.innerHTML = tagMaster.map(t=>`
     <div class="row">
-      <span class="tag">${t.name}</span>
+      <span class="tag"
+  style="
+    background:${t.color};
+    color:#fff;
+    border:none;
+  ">
+  ${t.name}
+</span>
       <button onclick="deleteTag('${t.id}')">削除</button>
     </div>
   `).join('');
@@ -191,11 +223,16 @@ function renderFilterTags(){
     const on = activeTags.includes(t.id);
 
     return `
-      <span class="tag ${on?'on':''}"
-        onclick="toggleFilterTag('${t.id}')">
-        ${t.name}
-      </span>
-    `;
+  <span class="tag ${on?'on':''}"
+    style="
+      background:${on ? t.color : '#fff'};
+      color:${on ? '#fff' : t.color};
+      border:1px solid ${t.color};
+    "
+    onclick="toggleFilterTag('${t.id}')">
+    ${t.name}
+  </span>
+`;
   }).join('');
 }
 
