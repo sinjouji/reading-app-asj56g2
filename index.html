@@ -95,8 +95,8 @@ function render(){
 const filtered = books.filter(b=>{
   if(activeTags.length === 0) return true;
 
-  return activeTags.every(t => (b.tags||[]).includes(t)); //AND
-  return activeTags.some(t => (b.tags||[]).includes(t)); //OR
+  return activeTags.every(tagId => (b.tags||[]).includes(tagId)); //AND
+  return activeTags.some(tagId => (b.tags||[]).includes(tagId)); //OR
   
 });
 
@@ -159,21 +159,6 @@ function getSeriesName(id){
   return s ? 'シリーズ: ' + s.name : '';
 }
 
-//タグ絞り込み
-function renderFilterTags(){
-  const el = document.getElementById('filter-tags');
-
-  el.innerHTML = tagMaster.map(t=>{
-    const on = activeTags.includes(t);
-
-    return `
-      <span class="tag ${on?'on':''}"
-        onclick="toggleFilterTag('${t}')">
-        ${t}
-      </span>
-    `;
-  }).join('');
-}
 
 //タグ一覧の描画
 function renderTagManager(){
@@ -187,7 +172,21 @@ function renderTagManager(){
   `).join('');
 }
 
+//タグ絞り込み
+function renderFilterTags(){
+  const el = document.getElementById('filter-tags');
 
+  el.innerHTML = tagMaster.map(t=>{
+    const on = activeTags.includes(t.id);
+
+    return `
+      <span class="tag ${on?'on':''}"
+        onclick="toggleFilterTag('${t.id}')">
+        ${t.name}
+      </span>
+    `;
+  }).join('');
+}
 
 
 // ===== 操作 =====
@@ -217,7 +216,7 @@ function addBook(){
 function addSeries(){
   const name = document.getElementById('newSeries').value.trim();
   if(!name) return;
-
+"t1""t1""t1
   series.push({
     id: 's'+Date.now(),
     name
@@ -272,15 +271,18 @@ function toggleTag(id, tagId){
   render();
 }
 
-function toggleFilterTag(tag){
-  if(activeTags.includes(tag)){
-    activeTags = activeTags.filter(t=>t!==tag);
+//タグフィルター
+
+function toggleFilterTag(tagId){
+  if(activeTags.includes(tagId)){
+    activeTags = activeTags.filter(t=>t!==tagId);
   }else{
-    activeTags.push(tag);
+    activeTags.push(tagId);
   }
 
   render();
 }
+
 function clearFilter(){
   activeTags = [];
   render();
