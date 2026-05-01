@@ -56,6 +56,15 @@ font-size:10px;
   <button onclick="addTagMaster()">追加</button>
 </div>
 
+
+<!--データエクスポート機能-->
+<div class="card">
+  <h3>データ管理</h3>
+  <button onclick="exportData()">エクスポート</button>
+  <input type="file" onchange="importData(event)">
+</div>
+
+
 <script>
 //==最初の定義付け、初期値入力？==
 
@@ -323,6 +332,54 @@ function deleteTag(id){
   render();
 }
 
+
+//エクスポート
+function exportData(){
+  const data = {
+    books,
+    series,
+    tagMaster
+  };
+
+  const json = JSON.stringify(data, null, 2);
+
+  const blob = new Blob([json], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "reading-app-backup.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+//インポート
+function importData(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(){
+    try{
+      const data = JSON.parse(reader.result);
+
+      books = data.books || [];
+      series = data.series || [];
+      tagMaster = data.tagMaster || [];
+
+      scheduleSave();
+      render();
+
+      alert("復元完了！");
+    }catch(err){
+      alert("読み込み失敗");
+    }
+  };
+
+  reader.readAsText(file);
+}
 
 
 
