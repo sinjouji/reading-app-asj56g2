@@ -57,12 +57,12 @@ font-size:10px;
 </div>
 
 <script>
-//最初の定義付け、初期値入力？
+//==最初の定義付け、初期値入力？==
 
 let books = [];
 let series = [];
 let tagMaster = [
-	{id:"t1", name:"小説", color:"#67b255"}
+	{id:"t1", name:"小説", color:"#67b255"},
 	{id:"t2", name:"漫画", color:"#ff9800"}
 ];
 let filterMode = "OR";
@@ -84,7 +84,6 @@ function loadData(){
   }catch(e){
     books = [];
     series = [];
-    tagMaster = [];
   }
 }
 function scheduleSave(){
@@ -163,7 +162,7 @@ function getSeriesName(id){
 }
 
 
-//タグ一覧の描画
+//==タグ一覧の描画==
 function renderTagManager(){
   const el = document.getElementById('tag-list');
 
@@ -175,7 +174,7 @@ function renderTagManager(){
   `).join('');
 }
 
-//タグ絞り込み
+//==タグ絞り込み==
 function renderFilterTags(){
   const el = document.getElementById('filter-tags');
 
@@ -273,7 +272,7 @@ function toggleTag(id, tagId){
   render();
 }
 
-//タグフィルター
+//==タグフィルター==
 
 function toggleFilterTag(tagId){
   if(activeTags.includes(tagId)){
