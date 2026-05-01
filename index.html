@@ -104,6 +104,7 @@ let tagMaster = [
 ];
 let filterMode = "OR";
 let activeTags = [];
+let currentBook = null;
 
 // ===== 保存 =====
 function saveData(){
@@ -146,7 +147,8 @@ function render(){
     <div class="card" onclick="openDetail(${b.id})">
       <div>
         <b>${b.title}</b><br>
-        <small>${b.status || "未読"}</small>
+        <small>${b.status === "reading" ? "読書中" :
+  b.status === "done" ? "読了" : "未読"}</small>
       </div>
 
       <div style="font-size:12px;color:#666">
