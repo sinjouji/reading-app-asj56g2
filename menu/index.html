@@ -91,6 +91,9 @@ textarea{resize:none}
 .template-pill{font-size:12px;padding:5px 11px;border-radius:14px;border:1.5px solid var(--br5);background:#fff;color:var(--br3);cursor:pointer;transition:all .15s;white-space:nowrap}
 .template-pill:hover{background:var(--br6)}
 .template-pill.used{background:var(--br3);color:#fff;border-color:var(--br3)}
+.omakase-btn{font-size:12px;padding:5px 13px;border-radius:14px;border:1.5px solid var(--br3);background:var(--br3);color:#fff;cursor:pointer;transition:all .15s;white-space:nowrap;font-weight:600}
+.omakase-btn:hover{background:var(--br2);border-color:var(--br2)}
+.omakase-btn.active{background:var(--br1);border-color:var(--br1)}
 .cal-manual-row{display:flex;align-items:center;gap:9px;margin-top:10px}
 .cal-manual-row input{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--rs);background:#fff;color:var(--txt);outline:none;font-family:var(--sans);transition:border-color .2s}
 .cal-manual-row input:focus{border-color:var(--br4)}
@@ -373,6 +376,12 @@ mark{background:#ffe08a;color:var(--br1);border-radius:2px;padding:0 1px}
         <input type="text" id="mood" class="text-input" placeholder="例：さっぱりしたもの、和食、丼もの">
         <div class="template-area">
           <div class="template-cat">
+            <div class="template-cat-label">ランダム</div>
+            <div class="template-pills">
+              <button type="button" class="omakase-btn" id="omakaseBtn" onclick="toggleOmakase()">🎲 おまかせ（AI任せ）</button>
+            </div>
+          </div>
+          <div class="template-cat">
             <div class="template-cat-label">ジャンル</div>
             <div class="template-pills" data-cat="ジャンル">
               <button type="button" class="template-pill" onclick="addTemplate(this,'和食')">和食</button>
@@ -405,6 +414,18 @@ mark{background:#ffe08a;color:var(--br1);border-radius:2px;padding:0 1px}
               <button type="button" class="template-pill" onclick="addTemplate(this,'肉料理')">肉料理</button>
               <button type="button" class="template-pill" onclick="addTemplate(this,'魚料理')">魚料理</button>
               <button type="button" class="template-pill" onclick="addTemplate(this,'副菜多め')">副菜多め</button>
+            </div>
+          </div>
+          <div class="template-cat">
+            <div class="template-cat-label">調理法</div>
+            <div class="template-pills" data-cat="調理法">
+              <button type="button" class="template-pill" onclick="addTemplate(this,'焼き料理')">焼く</button>
+              <button type="button" class="template-pill" onclick="addTemplate(this,'煮物')">煮る</button>
+              <button type="button" class="template-pill" onclick="addTemplate(this,'揚げ物')">揚げる</button>
+              <button type="button" class="template-pill" onclick="addTemplate(this,'炒め物')">炒める</button>
+              <button type="button" class="template-pill" onclick="addTemplate(this,'蒸し料理')">蒸す</button>
+              <button type="button" class="template-pill" onclick="addTemplate(this,'生・和え物')">生・和える</button>
+              <button type="button" class="template-pill" onclick="addTemplate(this,'スープ・汁物')">スープ</button>
             </div>
           </div>
           <div class="template-cat">
@@ -534,6 +555,31 @@ mark{background:#ffe08a;color:var(--br1);border-radius:2px;padding:0 1px}
 var provider = 'anthropic';
 var keys = { anthropic: '', gemini: '' };
 var logs = [], currentMeals = [], formOpen = false;
+var omakaseMode = false;
+
+/* ===== おまかせモード ===== */
+var OMAKASE_THEMES = [
+  'ピカタ風','アヒージョ風','みぞれ煮','ガリバタ炒め','チリソース',
+  'ハニーマスタード','南蛮漬け','ごま和え','塩麹焼き','みそバター',
+  'エスニック風炒め','トマト煮込み','磯辺揚げ','照り焼き','カレー風味',
+  'ゆず胡椒和え','甘酢あん','豆板醤炒め','クリーム煮','香草焼き'
+];
+function toggleOmakase() {
+  omakaseMode = !omakaseMode;
+  var btn = document.getElementById('omakaseBtn');
+  btn.classList.toggle('active', omakaseMode);
+  btn.textContent = omakaseMode ? '🎲 おまかせ ON（AI任せ）' : '🎲 おまかせ（AI任せ）';
+  if (omakaseMode) {
+    document.querySelectorAll('.template-pill.used').forEach(function(p){ p.classList.remove('used'); });
+    document.getElementById('mood').value = '';
+    showToast('おまかせモード ON：AIが自由に提案します', 'success');
+  } else {
+    showToast('おまかせモード OFF');
+  }
+}
+function getRandomOmakaseTheme() {
+  return OMAKASE_THEMES[Math.floor(Math.random() * OMAKASE_THEMES.length)];
+}
 var planSelected = []; // { id, name, ingredients[] }
 
 /* ===== INIT ===== */
@@ -681,6 +727,12 @@ function refreshInventory() {
 
 /* ===== テンプレ追加（トグル式） ===== */
 function addTemplate(btn, text) {
+  // おまかせモード中はテンプレタップで解除
+  if (omakaseMode) {
+    omakaseMode = false;
+    document.getElementById('omakaseBtn').classList.remove('active');
+    document.getElementById('omakaseBtn').textContent = '🎲 おまかせ（AI任せ）';
+  }
   var input = document.getElementById('mood');
   var current = input.value;
   var isUsed = btn.classList.contains('used');
@@ -742,7 +794,7 @@ function buildPrompt() {
   var calorie   = getCalorieInfo();
   var priority  = document.getElementById('priorityIngr').value.trim();
   var exclude   = document.getElementById('exclude').value.trim();
-  var mood      = document.getElementById('mood').value.trim();
+  var mood      = omakaseMode ? '' : document.getElementById('mood').value.trim();
   var cookTime  = document.querySelector('input[name="cookTime"]:checked').value;
   var notes     = document.getElementById('notes').value.trim();
 
@@ -757,16 +809,28 @@ function buildPrompt() {
     }
   });
 
-  return 'あなたはプロの栄養士です。以下の条件で本日の献立を3〜5品提案してください。\n\n【条件】\n- 目標カロリー: '+calorie+'\n'
-    +(inv.length?'- 現在の在庫食材: '+inv.join('、')+'\n':'')
-    +(priority?'- 優先して使いたい食材: '+priority+'\n':'')
-    +(exclude?'- 除外・アレルギー: '+exclude+'\n':'')
-    +(mood?'- 気分・希望: '+mood+'\n':'')
-    +'- 調理時間: '+cookTime+'\n'
-    +(notes?'- その他要望: '+notes+'\n':'')
-    +(recentMeals.length?'- 最近作った料理（できれば重複を避けてください）: '+recentMeals.join('、')+'\n':'')
-    +'\n【提案のコツ】\n- 定番料理と少し珍しい料理を混ぜて提案してください\n- 同じ食材でも調理法や味付けを変えてバリエーションを出してください\n- 単調にならないよう、提案の組み合わせに変化をつけてください\n'
-    +'\n必ず以下のJSON形式のみで出力してください（説明文・Markdownコードブロック不要）：\n{"meals":[{"name":"料理名","category":"朝食/昼食/夕食/おやつ","calories":数値,"cookTime":"XX分","description":"2〜3文の説明","ingredients":[{"name":"材料名","amount":"分量"}],"steps":["手順1","手順2"]}]}';
+  // おまかせモードならランダムテーマをヒントに
+  var omakaseHint = omakaseMode
+    ? 'テーマ（ランダム選定）: ' + getRandomOmakaseTheme() + '\n'
+    : '';
+
+  return 'あなたはプロの栄養士です。以下の条件で本日の献立を3〜5品提案してください。\n\n'
+    + '【マンネリ回避ルール（最重要）】\n'
+    + '1. 指定された食材をすべて1つの料理に詰め込む必要はありません。例えば鶏肉だけを主役に使い、ブロッコリーは副菜に回す、あるいは今回は一部の食材だけを使うなど、引き算の構成にしてください。\n'
+    + '2. 毎回「蒸し物」や「ただの炒め物」にならないよう、いつもと違う調理法や味付け（例：ピカタ、アヒージョ風、みぞれ煮、ガリバタ、チリソースなど）をランダムに1つ主軸として選んで、ひねったメニュー名にしてください。\n'
+    + '3. 主菜だけでなく、食材が余るなら「15分でできる副菜」に野菜などを逃がす構成にしてください。\n'
+    + '4. 定番料理と少し珍しい料理を混ぜて提案してください。\n\n'
+    + '【条件】\n'
+    + '- 目標カロリー: ' + calorie + '\n'
+    + (inv.length ? '- 現在の在庫食材: ' + inv.join('、') + '\n' : '')
+    + (priority ? '- 優先して使いたい食材: ' + priority + '\n' : '')
+    + (exclude ? '- 除外・アレルギー: ' + exclude + '\n' : '')
+    + omakaseHint
+    + (mood ? '- 気分・希望: ' + mood + '\n' : '')
+    + '- 調理時間: ' + cookTime + '\n'
+    + (notes ? '- その他要望: ' + notes + '\n' : '')
+    + (recentMeals.length ? '- 最近作った料理（できれば重複を避けてください）: ' + recentMeals.join('、') + '\n' : '')
+    + '\n必ず以下のJSON形式のみで出力してください（説明文・Markdownコードブロック不要）：\n{"meals":[{"name":"料理名","category":"朝食/昼食/夕食/おやつ","calories":数値,"cookTime":"XX分","description":"2〜3文の説明","ingredients":[{"name":"材料名","amount":"分量"}],"steps":["手順1","手順2"]}]}';
 }
 
 /* ===== API: ANTHROPIC ===== */
@@ -804,8 +868,9 @@ async function callGemini(prompt) {
 async function getSuggestion() {
   if(!keys[provider]){showApiModal();return;}
   var btn=document.getElementById('suggestBtn');
-  btn.disabled=true;btn.textContent='⏳ 考え中...';
-  document.getElementById('resultArea').innerHTML='<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">献立を考えています…</div></div>';
+  btn.disabled=true;
+  btn.textContent = omakaseMode ? '🎲 おまかせで考え中...' : '⏳ 考え中...';
+  document.getElementById('resultArea').innerHTML='<div class="loading-wrap"><div class="spinner"></div><div class="loading-text">'+(omakaseMode?'AIが自由に献立を考えています…':'献立を考えています…')+'</div></div>';
   try {
     var rawText = provider==='gemini' ? await callGemini(buildPrompt()) : await callAnthropic(buildPrompt());
     var clean=rawText.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
