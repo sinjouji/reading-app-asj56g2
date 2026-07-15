@@ -617,6 +617,51 @@ function selectModalHomeFood(item) {
   modalSelectedFoodName.textContent = foodName;
   modalSelectedFoodInfo.style.display = 'block';
   modalHomeSuggestList.classList.remove('show');
+
+  /* ★ 初期賞味期限設定をモーダル日付ボタンに反映 */
+  applyDefaultExpiryToModal(master);
+}
+
+/**
+ * foods マスタの defaultExpiryType/Days を
+ * 期限登録モーダルの日付ボタン・modalExpiryDate に反映する
+ */
+function applyDefaultExpiryToModal(food) {
+  var type = food.defaultExpiryType || 'ask';
+  var days = food.defaultExpiryDays || null;
+
+  document.querySelectorAll('#modalHomeDateBtns .date-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  modalHomeManualWrap.classList.remove('show');
+  modalExpiryDate = null;
+
+  if (type === 'none') {
+    var noneBtn = document.querySelector('#modalHomeDateBtns .date-btn[data-days="none"]');
+    if (noneBtn) {
+      noneBtn.classList.add('active');
+      modalExpiryDate = 'none';
+    }
+  } else if (type === 'days' && days) {
+    var dateStr = getDateStr(days);
+    var matched = false;
+    document.querySelectorAll('#modalHomeDateBtns .date-btn').forEach(function(b) {
+      if (b.dataset.days && b.dataset.days !== 'none' && b.dataset.days !== 'manual') {
+        if (Number(b.dataset.days) === days) {
+          b.classList.add('active');
+          modalExpiryDate = dateStr;
+          matched = true;
+        }
+      }
+    });
+    if (!matched) {
+      var manualBtn = document.querySelector('#modalHomeDateBtns .date-btn[data-days="manual"]');
+      if (manualBtn) manualBtn.classList.add('active');
+      modalHomeManualWrap.classList.add('show');
+      modalHomeManualDate.value = dateStr;
+      modalExpiryDate = dateStr;
+    }
+  }
 }
 
 
@@ -912,6 +957,56 @@ function selectHomeFood(item) {
   selFoodName.textContent = foodName;
   selFoodInfo.style.display = 'block';
   homeSuggestList.classList.remove('show');
+
+  /* ★ 初期賞味期限設定を日付ボタンに反映 */
+  applyDefaultExpiry(master);
+}
+
+/**
+ * foods マスタの defaultExpiryType/Days を
+ * トグルパネルの日付ボタン・homeExpiryDate に反映する
+ */
+function applyDefaultExpiry(food) {
+  var type = food.defaultExpiryType || 'ask';
+  var days = food.defaultExpiryDays || null;
+
+  /* ボタンを全リセット */
+  document.querySelectorAll('#homeDateBtns .date-btn').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  homeManualWrap.classList.remove('show');
+  homeExpiryDate = null;
+
+  if (type === 'none') {
+    /* 期限なし → "期限なし" ボタンをアクティブ */
+    var noneBtn = document.querySelector('#homeDateBtns .date-btn[data-days="none"]');
+    if (noneBtn) {
+      noneBtn.classList.add('active');
+      homeExpiryDate = 'none';
+    }
+  } else if (type === 'days' && days) {
+    /* ○日後 → 一致するボタンがあればアクティブ、なければ手動入力欄に日付をセット */
+    var dateStr = getDateStr(days);
+    var matched = false;
+    document.querySelectorAll('#homeDateBtns .date-btn').forEach(function(b) {
+      if (b.dataset.days && b.dataset.days !== 'none' && b.dataset.days !== 'manual') {
+        if (Number(b.dataset.days) === days) {
+          b.classList.add('active');
+          homeExpiryDate = dateStr;
+          matched = true;
+        }
+      }
+    });
+    if (!matched) {
+      /* ボタンに一致する日数がなければ手動入力欄に自動セット */
+      var manualBtn = document.querySelector('#homeDateBtns .date-btn[data-days="manual"]');
+      if (manualBtn) manualBtn.classList.add('active');
+      homeManualWrap.classList.add('show');
+      homeManualDate.value = dateStr;
+      homeExpiryDate = dateStr;
+    }
+  }
+  /* type === 'ask' は何もしない（毎回入力） */
 }
 
 var homeSearchTimer;
