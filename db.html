@@ -112,6 +112,30 @@
     <p id="dupMsg" style="font-size:0.78rem;color:var(--accent);margin-bottom:8px;display:none;">
       ⚠️ 同名の食材が既に存在します
     </p>
+
+    <!-- ★ 初期賞味期限設定 -->
+    <div class="default-expiry-section">
+      <div class="default-expiry-label">
+        <span class="default-expiry-icon">📅</span>
+        <span>初期賞味期限</span>
+        <span class="default-expiry-hint">在庫登録時の初期値</span>
+      </div>
+      <div class="default-expiry-btns" id="defaultExpiryBtns">
+        <button class="def-exp-btn active" data-type="ask">毎回入力</button>
+        <button class="def-exp-btn" data-type="days">○日後</button>
+        <button class="def-exp-btn" data-type="none">期限なし</button>
+      </div>
+      <div class="default-expiry-days-row" id="defaultExpiryDaysRow" style="display:none;">
+        <input
+          type="number"
+          id="defaultExpiryDaysInput"
+          class="default-expiry-days-input"
+          min="1" max="365" placeholder="日数"
+        >
+        <span class="default-expiry-days-unit">日後</span>
+      </div>
+    </div>
+
     <button class="register-btn" id="newFoodRegisterBtn">追加する</button>
   </div>
 </div>
